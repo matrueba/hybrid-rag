@@ -1,0 +1,7 @@
+supabase
+openai
+pydantic
+docling
+python-dotenv
+google-api-python-client
+google-auth
