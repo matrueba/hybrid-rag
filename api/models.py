@@ -4,8 +4,6 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 
-# ── /api/run ──────────────────────────────────────────────────────────
-
 class RunRequest(BaseModel):
     """Request body for the /api/run endpoint."""
     prompt: str = Field(..., min_length=1, description="The user prompt to send to the agent.")
@@ -16,8 +14,6 @@ class RunResponse(BaseModel):
     """Successful response from the /api/run endpoint."""
     response: str
 
-
-# ── /api/config ───────────────────────────────────────────────────────
 
 class ConfigRequest(BaseModel):
     """Request body for the /api/config endpoint. All fields are optional; only supplied fields are updated."""
@@ -37,6 +33,13 @@ class ConfigRequest(BaseModel):
     # Supabase
     supabase_url: Optional[str] = None
     supabase_key: Optional[str] = None
+    # Agent
+    agent_session_id: Optional[str] = None
+    # Reranker
+    rerank_enabled: Optional[bool] = None
+    rerank_provider: Optional[str] = None
+    rerank_model: Optional[str] = None
+    rerank_top_k: Optional[int] = None
 
 
 class ConfigResponse(BaseModel):
@@ -54,10 +57,16 @@ class ConfigResponse(BaseModel):
     max_match_count: int
     # Supabase
     supabase_url: str
+    supabase_key: str
+    # Agent
+    agent_session_id: str
+    # Reranker
+    rerank_enabled: bool
+    rerank_provider: str
+    rerank_model: str
+    rerank_top_k: int
 
 
-# ── generic ───────────────────────────────────────────────────────────
-
-class ErrorResponse(BaseModel):
-    """Generic error envelope."""
+class ConfigResponse(BaseModel):
+    """Returns the current settings after an update."""
     detail: str

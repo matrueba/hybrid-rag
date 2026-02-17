@@ -8,6 +8,7 @@ import logging
 from rag_agent.agent_tools import search_knowledge_base
 from rag_agent.system_prompt import SYSTEM_PROMPT
 from rag_agent.supabase_session import SupabaseSession
+from agents.memory.session_settings import SessionSettings
 
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,11 @@ class RagAgent:
 
         # Initialize Supabase session for conversation persistence
         supabase = create_client(self.settings.supabase_url, self.settings.supabase_key)
-        self.session = SupabaseSession(session_id=self.session_id, supabase=supabase)
+        self.session = SupabaseSession(
+            session_id=self.session_id,
+            supabase=supabase,
+            session_settings=SessionSettings(limit=10),
+        )
 
         self.agent = Agent(
             name="Query",

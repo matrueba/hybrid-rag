@@ -1,5 +1,15 @@
 from agents import function_tool, RunContextWrapper
-from typing import Optional, Any
+from typing import Optional, Any, Dict, List
+from pydantic import BaseModel, Field
+from supabase import Client
+from supabase.lib.client_options import ClientOptions
+from ingestion.embedder import EmbeddingGenerator, create_embedder
+from rag_agent.reranker import create_reranker
+from settings import Settings, load_settings
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 class SearchDeps:
     """Encapsulates Supabase client, settings, and embedder for search tools."""
@@ -152,16 +162,29 @@ async def search_knowledge_base(
     try:
         deps = SearchDeps()
 
+        # When reranking is enabled, fetch a wider pool so the reranker
+        # has more candidates to choose from.
+        fetch_count = match_count
+        if deps.settings.rerank_enabled:
+            fetch_count = (match_count or 5) * 3
+
         results = await hybrid_search(
             deps,
             query,
-            match_count=match_count,
+            match_count=fetch_count,
             full_text_weight=full_text_weight or 1.0,
             semantic_weight=semantic_weight or 1.0,
         )
 
         if not results:
             return "No relevant information found in the knowledge base."
+
+        # Rerank results if enabled
+        if deps.settings.rerank_enabled:
+            reranker = create_reranker(deps.settings)
+            results = await reranker.rerank(
+                query, results, top_k=deps.settings.rerank_top_k
+            )
 
         response_parts = [f"Found {len(results)} relevant documents:\n"]
 

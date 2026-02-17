@@ -80,8 +80,8 @@ def display_welcome(settings: Settings):
     welcome = Panel(
         "[bold blue]RAG System[/bold blue]\n\n"
         "[green]Intelligent knowledge base search[/green]\n"
-        f"[dim]LLM: {llm_model}[/dim]\n\n"
-        "[dim]Type 'exit' to quit, 'info' for system info, 'clear' to clear screen[/dim]",
+        f"[cyan]LLM: {llm_model}[/cyan]\n\n"
+        "[cyan]Type 'exit' to quit, 'info' for system info, 'clear' to clear screen[/cyan]",
         style="blue",
         padding=(1, 2)
     )
@@ -117,10 +117,8 @@ async def interactive_chat(rag_agent: RagAgent, settings: Settings):
                 console.clear()
                 display_welcome(settings)
                 continue
-            elif not user_input:
-                continue
-
-            await run_agent_stream(rag_agent, user_input)
+            else:
+                await run_agent_stream(rag_agent, user_input)
 
         except KeyboardInterrupt:
             console.print("\n[yellow]Use 'exit' to quit[/yellow]")
