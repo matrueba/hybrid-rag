@@ -1,17 +1,5 @@
-
-import logging
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
-from supabase import create_client, Client
-from settings import load_settings, Settings
-from ingestion.embedder import EmbeddingGenerator, create_embedder
-
-logger = logging.getLogger(__name__)
-
-
-# ---------------------------------------------------------------------------
-# Shared dependencies for search tools
-# ---------------------------------------------------------------------------
+from agents import function_tool, RunContextWrapper
+from typing import Optional, Any
 
 class SearchDeps:
     """Encapsulates Supabase client, settings, and embedder for search tools."""
@@ -30,13 +18,8 @@ class SearchDeps:
         self.embedder = embedder or create_embedder()
 
 
-# ---------------------------------------------------------------------------
-# Result model
-# ---------------------------------------------------------------------------
-
 class SearchResult(BaseModel):
     """Model for search results."""
-
     chunk_id: str = Field(..., description="Chunk row ID as string")
     document_id: str = Field(..., description="Parent document UUID as string")
     content: str = Field(..., description="Chunk text content")
@@ -138,3 +121,58 @@ def _rows_to_search_results(rows: List[Dict[str, Any]]) -> List[SearchResult]:
         )
         for row in rows
     ]
+ 
+@function_tool
+async def search_knowledge_base(
+    query: str,
+    match_count: Optional[int] = 5,
+    full_text_weight: Optional[float] = 1.0,
+    semantic_weight: Optional[float] = 1.0,
+) -> str:
+    """
+    Search the knowledge base for relevant information.
+
+    Uses hybrid search combining semantic (vector) and full-text (keyword)
+    matching with Reciprocal    Rank Fusion. Adjust weights to control the
+    search strategy:
+    - Both 1.0 → hybrid search (default, recommended)
+    - full_text_weight=0 → semantic only
+    - semantic_weight=0  → full-text only
+
+    Args:
+        ctx: Agent runtime context with state dependencies
+        query: Search query text
+        match_count: Number of results to return (default: 5)
+        full_text_weight: Weight for keyword matching (0 to disable)
+        semantic_weight: Weight for semantic matching (0 to disable)
+
+    Returns:
+        String containing the retrieved information formatted for the LLM
+    """
+    try:
+        deps = SearchDeps()
+
+        results = await hybrid_search(
+            deps,
+            query,
+            match_count=match_count,
+            full_text_weight=full_text_weight or 1.0,
+            semantic_weight=semantic_weight or 1.0,
+        )
+
+        if not results:
+            return "No relevant information found in the knowledge base."
+
+        response_parts = [f"Found {len(results)} relevant documents:\n"]
+
+        for i, result in enumerate(results, 1):
+            response_parts.append(
+                f"\n--- Document {i}: {result.document_title} "
+                f"(relevance: {result.similarity:.4f}) ---"
+            )
+            response_parts.append(result.content)
+
+        return "\n".join(response_parts)
+
+    except Exception as e:
+        return f"Error searching knowledge base: {str(e)}"

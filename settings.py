@@ -21,7 +21,7 @@ class Settings:
     embedding_api_key: str = os.getenv("EMBEDDING_API_KEY", "")
     embedding_base_url: str = os.getenv("EMBEDDING_BASE_URL", "http://localhost:11434/v1")
     # LLM settings
-    llm_local: bool = os.getenv("LLM_LOCAL", "True")
+    llm_local: bool = os.getenv("LLM_LOCAL", "False")
     llm_model: str = os.getenv("LLM_MODEL", "gemini-3-flash-preview")
     llm_base_url: str = os.getenv("LLM_BASE_URL", "http://localhost:11434/v1")
     llm_api_key: str = os.getenv("LLM_API_KEY", "")

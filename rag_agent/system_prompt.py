@@ -1,4 +1,4 @@
-MAIN_SYSTEM_PROMPT = """You are a helpful assistant with access to a knowledge base that you can search when needed.
+SYSTEM_PROMPT = """You are a helpful assistant with access to a knowledge base that you can search when needed.
 
 ALWAYS Start with Hybrid search
 
