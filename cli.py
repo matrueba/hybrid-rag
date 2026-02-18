@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from agents import gen_trace_id
 
 from rag_agent.agent import RagAgent
-from settings import load_settings, Settings
+from settings import Settings
 
 load_dotenv(override=True)
 

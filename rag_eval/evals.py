@@ -12,12 +12,9 @@ from ragas.metrics import DiscreteMetric
 sys.path.insert(0, str(Path(__file__).parent))
 from rag import default_rag_client
 
-# Create an OpenAI-compatible client for Ollama
-client = OpenAI(
-    api_key="ollama",
-    base_url="http://localhost:11434/v1"
-)
-llm = llm_factory("qwen3:14b", provider="ollama", client=client)
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+rag_client = default_rag_client(llm_client=openai_client, logdir="evals/logs")
+llm = llm_factory("gpt-4o", client=openai_client)
 
 
 def load_dataset():

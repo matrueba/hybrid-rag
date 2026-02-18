@@ -39,14 +39,13 @@ class Settings:
             "max_tokens": 512
         }
     })
+    # Reranking settings
+    rerank_enabled: bool = os.getenv("RERANK_ENABLED", "False")
+    rerank_model: str = os.getenv("RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
+    rerank_top_k: int = int(os.getenv("RERANK_TOP_K", "5"))
     # Google Drive settings
     gdrive_credentials_file: str = os.getenv("GDRIVE_CREDENTIALS_FILE", "credentials.json")
     gdrive_folder_id: str = os.getenv("GDRIVE_FOLDER_ID", "")
-    # Reranking settings
-    rerank_enabled: bool = os.getenv("RERANK_ENABLED", "False")
-    rerank_provider: str = os.getenv("RERANK_PROVIDER", "local")
-    rerank_model: str = os.getenv("RERANK_MODEL", "rerank-v3.5")
-    rerank_top_k: int = int(os.getenv("RERANK_TOP_K", "5"))
 
 
 def load_settings() -> Settings:

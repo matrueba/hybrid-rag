@@ -37,7 +37,6 @@ class ConfigRequest(BaseModel):
     agent_session_id: Optional[str] = None
     # Reranker
     rerank_enabled: Optional[bool] = None
-    rerank_provider: Optional[str] = None
     rerank_model: Optional[str] = None
     rerank_top_k: Optional[int] = None
 
@@ -62,7 +61,6 @@ class ConfigResponse(BaseModel):
     agent_session_id: str
     # Reranker
     rerank_enabled: bool
-    rerank_provider: str
     rerank_model: str
     rerank_top_k: int
 

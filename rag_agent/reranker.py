@@ -59,14 +59,9 @@ def create_reranker(settings) -> Reranker:
     Create the appropriate reranker based on settings.
 
     Args:
-        settings: Application settings with rerank_provider, rerank_model,
-                  and rerank_api_key.
+        settings: Application settings with rerank_model.
 
     Returns:
         A Reranker instance.
     """
-    provider = settings.rerank_provider.lower()
-    if provider == "local":
-        return LocalReranker(model_name=settings.rerank_model)
-    else:
-        raise ValueError(f"Unknown rerank provider: {provider}")
+    return LocalReranker(model_name=settings.rerank_model)
