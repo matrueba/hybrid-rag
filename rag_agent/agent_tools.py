@@ -1,7 +1,7 @@
 from agents import function_tool, RunContextWrapper
 from typing import Optional, Any, Dict, List
 from pydantic import BaseModel, Field
-from supabase import Client
+from supabase import Client, create_client
 from supabase.lib.client_options import ClientOptions
 from ingestion.embedder import EmbeddingGenerator, create_embedder
 from rag_agent.reranker import create_reranker

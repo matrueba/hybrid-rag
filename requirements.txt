@@ -1,5 +1,6 @@
 supabase
 openai
+openai-agents
 pydantic
 docling
 python-dotenv

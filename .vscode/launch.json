@@ -9,11 +9,9 @@
             "type": "debugpy",
             "request": "launch",
             "program": "main.py",
-            "args": ["--cli"],
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/.venv/bin/python"
         },
-        
         {
             "name": "Python Debugger: Ingestion",
             "type": "debugpy",

@@ -56,15 +56,12 @@ class ConfigResponse(BaseModel):
     max_match_count: int
     # Supabase
     supabase_url: str
-    supabase_key: str
-    # Agent
-    agent_session_id: str
     # Reranker
     rerank_enabled: bool
     rerank_model: str
     rerank_top_k: int
 
 
-class ConfigResponse(BaseModel):
-    """Returns the current settings after an update."""
+class ErrorResponse(BaseModel):
+    """Error response."""
     detail: str

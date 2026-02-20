@@ -94,6 +94,9 @@ async def config(body: ConfigRequest, request: Request):
             default_match_count=settings.default_match_count,
             max_match_count=settings.max_match_count,
             supabase_url=settings.supabase_url,
+            rerank_enabled=settings.rerank_enabled,
+            rerank_model=settings.rerank_model,
+            rerank_top_k=settings.rerank_top_k,
         )
 
     except HTTPException:

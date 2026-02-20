@@ -1,6 +1,6 @@
-# 🧠 Hubryd RAG
+# 🧠 Hybrid RAG
 
-A **Hybrid Retrieval-Augmented Generation** system built with **Supabase**, **OpenAI Agents SDK**, and **Docling**. It combines **semantic** and **keyword-based search** with optional **reranking** for high-quality knowledge retrieval, available through both a **CLI** and a **REST API**.
+A customizable **Hybrid Retrieval-Augmented Generation** system. It combines **semantic** and **keyword-based search** with optional **reranking** for high-quality knowledge retrieval, available through both a **CLI** and a **REST API**. Multiformat ingestion is supported.
 
 ---
 
@@ -10,7 +10,7 @@ A **Hybrid Retrieval-Augmented Generation** system built with **Supabase**, **Op
 - **Reranking** — Optional cross-encoder reranking to improve result relevance.
 - **Streaming Responses** — Real-time streamed LLM responses in CLI mode.
 - **Session Persistence** — Conversation history stored in Supabase for multi-turn interactions.
-- **Document Ingestion** — Ingest documents from local files or Google Drive.
+- **Multiformat Ingestion** — Multi-Format Ingestion: PDF, Word, PowerPoint, Excel, HTML, Markdown, Audio transcription.
 - **REST API** — FastAPI endpoints for health check, running queries, and live configuration.
 - **Flexible LLM Support** — Use cloud models (Gemini, OpenAI) or local models via Ollama.
 - **Evaluation Suite** — Built-in RAG evaluation via [RAGAS](https://docs.ragas.io/).
@@ -23,15 +23,13 @@ A **Hybrid Retrieval-Augmented Generation** system built with **Supabase**, **Op
 
 > The ingestion pipeline takes raw documents, chunks them, generates embeddings, and stores everything in Supabase.
 
-<!-- TODO: Add ingest process diagram here -->
-<!-- ![Ingest Process](docs/diagrams/ingest_process.png) -->
+![Ingest Process](docs/ingest.png)
 
 ### Retrieving Process
 
 > The retrieval pipeline receives a user query, performs hybrid search (semantic + keyword) with optional reranking, and feeds the context to the LLM agent.
 
-<!-- TODO: Add retrieving process diagram here -->
-<!-- ![Retrieving Process](docs/diagrams/retrieving_process.png) -->
+![Retrieving Process](docs/retrieving.png)
 
 ---
 
@@ -67,11 +65,6 @@ hubryd-rag/
 ├── models/                  # Shared data models
 │   ├── chuncker.py          # Chunk model
 │   └── ingest.py            # Ingestion config/result models
-│
-├── rag_eval/                # Evaluation suite (RAGAS)
-│   ├── rag.py               # Evaluation RAG pipeline
-│   ├── evals.py             # Evaluation runner
-│   └── evals/               # Eval datasets
 │
 ├── tests/                   # Tests
 │   ├── test_ingestion.py
@@ -183,12 +176,92 @@ python3 main.py --host 0.0.0.0 --port 8000
 | `POST` | `/api/run`    | Send a prompt and receive the agent response         |
 | `POST` | `/api/config` | Update runtime configuration (LLM, embeddings, etc.) |
 
-**Example — `/api/run`:**
+#### `GET /api/alive` — Health check
+
+```bash
+curl http://localhost:8000/api/alive
+```
+
+Response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+#### `POST /api/run` — Run a query
 
 ```bash
 curl -X POST http://localhost:8000/api/run \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "What is hybrid search?", "session_id": "default"}'
+  -d '{
+    "prompt": "What is hybrid search?",
+    "session_id": "default"
+  }'
+```
+
+Request body:
+
+| Field        | Type   | Required | Description                                                    |
+| ------------ | ------ | -------- | -------------------------------------------------------------- |
+| `prompt`     | string | ✅       | The user query to send to the agent                            |
+| `session_id` | string | ❌       | Session ID for conversation persistence (default: `"default"`) |
+
+Response:
+
+```json
+{
+  "response": "Hybrid search combines semantic vector search with traditional keyword-based full-text search to improve retrieval quality..."
+}
+```
+
+#### `POST /api/config` — Update runtime configuration
+
+```bash
+curl -X POST http://localhost:8000/api/config \
+  -H "Content-Type: application/json" \
+  -d '{
+    "llm_model": "gpt-4o",
+    "rerank_enabled": true,
+    "rerank_top_k": 3
+  }'
+```
+
+Request body (all fields optional — only supplied fields are updated):
+
+| Field                  | Type   | Description                       |
+| ---------------------- | ------ | --------------------------------- |
+| `llm_model`            | string | LLM model name                    |
+| `llm_local`            | bool   | Use local LLM via Ollama          |
+| `llm_base_url`         | string | LLM API base URL                  |
+| `llm_api_key`          | string | LLM API key                       |
+| `embedding_model`      | string | Embedding model name              |
+| `embedding_dimensions` | int    | Embedding vector dimensions       |
+| `embedding_api_key`    | string | Embedding API key                 |
+| `embedding_base_url`   | string | Embedding API base URL            |
+| `default_match_count`  | int    | Default number of search results  |
+| `max_match_count`      | int    | Maximum number of search results  |
+| `supabase_url`         | string | Supabase project URL              |
+| `supabase_key`         | string | Supabase API key                  |
+| `rerank_enabled`       | bool   | Enable cross-encoder reranking    |
+| `rerank_model`         | string | Reranking model name              |
+| `rerank_top_k`         | int    | Number of results after reranking |
+
+Response:
+
+```json
+{
+  "llm_model": "gpt-4o",
+  "llm_local": false,
+  "llm_base_url": "http://localhost:11434/v1",
+  "embedding_model": "snowflake-arctic-embed2",
+  "embedding_dimensions": 1024,
+  "embedding_base_url": "http://localhost:11434/v1",
+  "default_match_count": 10,
+  "max_match_count": 50,
+  "supabase_url": "https://xxx.supabase.co"
+}
 ```
 
 ---

@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 class ToolUsageHooks(RunHooks):
     """Logs when tools are invoked and when they finish."""
 
-    async def on_llm_start(self, context, agent, session) -> None:
+    async def on_llm_start(self, context, agent, system_prompt, input_items) -> None:
         logger.info("🚀 [%s] Starting LLM call", agent.name)
 
-    async def on_llm_end(self, context, agent, session) -> None:
+    async def on_llm_end(self, context, agent, response) -> None:
         logger.info("✅ [%s] LLM call finished", agent.name)
 
     async def on_tool_start(self, context, agent, tool: Tool) -> None:
@@ -68,7 +68,7 @@ class RagAgent:
             instructions=SYSTEM_PROMPT,
             model=self.model,
             tools=[search_knowledge_base],
-            model_settings=ModelSettings(tool_choice="search_knowledge_base")
+            model_settings=ModelSettings(tool_choice="required")
         )
 
     async def run_agent(self, prompt):

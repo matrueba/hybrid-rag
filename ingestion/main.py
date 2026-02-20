@@ -31,15 +31,9 @@ async def main() -> None:
         help="Skip cleaning existing data before ingestion"
     )
     parser.add_argument(
-        "--chunk-overlap",
-        type=int,
-        default=200,
-        help="Chunk overlap size"
-    )
-    parser.add_argument(
         "--max-tokens",
         type=int,
-        default=512,
+        default=256,
         help="Maximum tokens per chunk for embeddings"
     )
     parser.add_argument(
