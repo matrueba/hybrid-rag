@@ -51,6 +51,16 @@ async def main() -> None:
         default=os.getenv("GDRIVE_FOLDER_ID", ""),
         help="Google Drive folder ID (required with --gdrive)"
     )
+    parser.add_argument(
+        "--s3",
+        action="store_true",
+        help="Ingest documents from S3 compatible storage"
+    )
+    parser.add_argument(
+        "--s3-prefix",
+        default="",
+        help="S3 bucket prefix (folder) to download from (optional)"
+    )
 
     args = parser.parse_args()
 
@@ -67,7 +77,12 @@ async def main() -> None:
     )
 
     # Determine source type
-    source_type = "gdrive" if args.gdrive else "local"
+    if args.s3:
+        source_type = "s3"
+    elif args.gdrive:
+        source_type = "gdrive"
+    else:
+        source_type = "local"
 
     # Create and run pipeline
     pipeline = DocumentIngestionPipeline(
@@ -75,7 +90,8 @@ async def main() -> None:
         documents_folder=args.documents,
         clean_before_ingest=not args.no_clean,
         source_type=source_type,
-        gdrive_folder_id=args.folder_id
+        gdrive_folder_id=args.folder_id,
+        s3_prefix=args.s3_prefix
     )
 
     def progress_callback(current: int, total: int) -> None:

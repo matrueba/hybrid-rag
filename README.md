@@ -11,6 +11,7 @@ A customizable **Hybrid Retrieval-Augmented Generation** system. It combines **s
 - **Streaming Responses** — Real-time streamed LLM responses in CLI mode.
 - **Session Persistence** — Conversation history stored in Supabase for multi-turn interactions.
 - **Multiformat Ingestion** — Multi-Format Ingestion: PDF, Word, PowerPoint, Excel, HTML, Markdown, Audio transcription.
+- **MultiSource Ingestion** — Multi-Source Ingestion: Local files, Google Drive, S3 compatible storage.
 - **REST API** — FastAPI endpoints for health check, running queries, and live configuration.
 - **Flexible LLM Support** — Use cloud models (Gemini, OpenAI) or local models via Ollama.
 - **Evaluation Suite** — Built-in RAG evaluation via [RAGAS](https://docs.ragas.io/).
@@ -55,7 +56,8 @@ hubryd-rag/
 │   ├── ingest.py            # DocumentIngestionPipeline class
 │   ├── chuncker.py          # Document chunking logic
 │   ├── embedder.py          # Embedding generation (OpenAI-compatible)
-│   └── gdrive.py            # Google Drive file download
+│   ├── gdrive.py            # Google Drive file download
+│   └── s3.py                # S3 compatible storage file download
 │
 ├── api/                     # REST API (FastAPI)
 │   ├── app.py               # App factory
@@ -145,6 +147,8 @@ python3 ingestion/main.py --gdrive --folder-id <FOLDER_ID> --verbose
 | `--gdrive`          | Ingest from Google Drive                     | `false`                |
 | `--folder-id`       | Google Drive folder ID                       | env `GDRIVE_FOLDER_ID` |
 | `--verbose`, `-v`   | Enable debug logging                         | `false`                |
+| `--s3`              | Ingest from S3 compatible storage            | `false`                |
+| `--s3-prefix`       | S3 bucket prefix (folder)                    | env `S3_PREFIX`        |
 
 ---
 
@@ -287,6 +291,12 @@ All settings are managed via environment variables (`.env` file). Key options:
 | `TRACING_API_KEY`         | OpenAI tracing API key            | —                                      |
 | `GDRIVE_CREDENTIALS_FILE` | Google Drive service account JSON | `credentials.json`                     |
 | `GDRIVE_FOLDER_ID`        | Google Drive folder to ingest     | —                                      |
+| `S3_ENDPOINT`             | S3 compatible storage endpoint    | —                                      |
+| `S3_ACCESS_KEY`           | S3 access key                     | —                                      |
+| `S3_SECRET_KEY`           | S3 secret key                     | —                                      |
+| `S3_REGION`               | S3 region                         | —                                      |
+| `S3_BUCKET`               | S3 bucket name                    | —                                      |
+| `S3_PREFIX`               | S3 prefix (folder)                | —                                      |
 
 ### Supported Embedding Models
 

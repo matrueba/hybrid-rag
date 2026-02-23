@@ -55,7 +55,8 @@ class DocumentIngestionPipeline:
         documents_folder: str = "documents",
         clean_before_ingest: bool = True,
         source_type: str = "local",
-        gdrive_folder_id: str = ""
+        gdrive_folder_id: str = "",
+        s3_prefix: str = ""
     ):
         """
         Initialize ingestion pipeline.
@@ -64,14 +65,16 @@ class DocumentIngestionPipeline:
             config: Ingestion configuration
             documents_folder: Folder containing documents
             clean_before_ingest: Whether to clean existing data before ingestion
-            source_type: 'local' for local files, 'gdrive' for Google Drive
+            source_type: 'local' for local files, 'gdrive' for Google Drive, 's3' for S3 compatible storage
             gdrive_folder_id: Google Drive folder ID (required if source_type='gdrive')
+            s3_prefix: Prefix in the S3 bucket to download from
         """
         self.config = config
         self.documents_folder = documents_folder
         self.clean_before_ingest = clean_before_ingest
         self.source_type = source_type
         self.gdrive_folder_id = gdrive_folder_id
+        self.s3_prefix = s3_prefix
         self._temp_dir = None  # Temp dir for Google Drive downloads
         self.settings = load_settings()
         self.supabase: Optional[Client] = None
@@ -541,6 +544,8 @@ class DocumentIngestionPipeline:
         # If source is Google Drive, download files first
         if self.source_type == "gdrive":
             self.documents_folder = self._download_from_gdrive()
+        elif self.source_type == "s3":
+            self.documents_folder = self._download_from_s3()
 
         # Find all supported document files
         document_files = self._find_document_files()
@@ -619,6 +624,26 @@ class DocumentIngestionPipeline:
         logger.info(f"Downloading Google Drive folder {self.gdrive_folder_id} to {self._temp_dir}")
 
         client.download_folder(self.gdrive_folder_id, self._temp_dir)
+        return self._temp_dir
+
+    def _download_from_s3(self) -> str:
+        """
+        Download files from S3 compatible storage to a temporary directory.
+
+        Returns:
+            Path to the temp directory containing downloaded files.
+        """
+        try:
+            from s3 import S3Client
+        except ImportError:
+            from ingestion.s3 import S3Client
+
+        client = S3Client()
+
+        self._temp_dir = tempfile.mkdtemp(prefix="s3_ingest_")
+        logger.info(f"Downloading S3 bucket {client.get_bucket_name()} prefix '{self.s3_prefix}' to {self._temp_dir}")
+
+        client.download_folder(self.s3_prefix, self._temp_dir)
         return self._temp_dir
 
 

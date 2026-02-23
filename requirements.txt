@@ -9,3 +9,4 @@ google-auth
 fastapi
 uvicorn[standard]
 sentence-transformers
+boto3

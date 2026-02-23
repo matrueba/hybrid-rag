@@ -228,6 +228,15 @@ def step_configure_env() -> dict[str, str]:
         env["GDRIVE_CREDENTIALS_FILE"] = ask("Path to credentials file", "credentials.json")
         env["GDRIVE_FOLDER_ID"] = ask("Google Drive folder ID")
 
+    # ── S3 Object Storage ─────────────────────────────────────────────────
+    print(f"\n  {BOLD}S3 Compatible Object Storage (optional){RESET}")
+    if ask_yes_no("Configure ingestion from S3 compatible storage?", default=False):
+        env["S3_ENDPOINT_URL"] = ask("S3 Endpoint URL (leave empty for AWS)")
+        env["S3_ACCESS_KEY"] = ask("S3 Access Key")
+        env["S3_SECRET_KEY"] = ask("S3 Secret Key", secret=True)
+        env["S3_BUCKET_NAME"] = ask("S3 Bucket Name")
+        env["S3_REGION"] = ask("S3 Region", settings.s3_region)
+
     # ── Tracing ───────────────────────────────────────────────────────────
     print(f"\n  {BOLD}Tracing / Observability (optional){RESET}")
     if ask_yes_no("¿Configure tracing (e.g: OpenAI Tracing, Langsmith, etc.)?", default=False):
@@ -257,6 +266,7 @@ def _write_env_file(env: dict[str, str]) -> None:
         ("# ── Search", ["DEFAULT_MATCH_COUNT", "MAX_MATCH_COUNT"]),
         ("# ── Reranking", ["RERANK_ENABLED", "RERANK_MODEL", "RERANK_TOP_K"]),
         ("# ── Google Drive", ["GDRIVE_CREDENTIALS_FILE", "GDRIVE_FOLDER_ID"]),
+        ("# ── S3 Object Storage", ["S3_ENDPOINT_URL", "S3_ACCESS_KEY", "S3_SECRET_KEY", "S3_BUCKET_NAME", "S3_REGION"]),
         ("# ── Tracing", ["TRACING_API_KEY"]),
     ]
 

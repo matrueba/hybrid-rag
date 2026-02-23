@@ -7,8 +7,9 @@ import os
 import argparse
 
 # Add project root and ingestion to path
-sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "ingestion"))
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, root_path)
+sys.path.insert(0, os.path.join(root_path, "ingestion"))
 
 from ingestion.ingest import DocumentIngestionPipeline
 from models.ingest import IngestionConfig
@@ -26,6 +27,8 @@ async def main():
     parser = argparse.ArgumentParser(description="Test document ingestion")
     parser.add_argument("--gdrive", action="store_true", help="Ingest from Google Drive")
     parser.add_argument("--folder-id", default=os.getenv("GDRIVE_FOLDER_ID", ""), help="Drive folder ID")
+    parser.add_argument("--s3", action="store_true", help="Ingest from S3 compatible storage")
+    parser.add_argument("--s3-prefix", default="", help="S3 bucket prefix (folder)")
     parser.add_argument("--documents", "-d", default="documents", help="Local documents folder")
     parser.add_argument("--no-clean", action="store_true", help="Skip cleaning existing data")
     args = parser.parse_args()
@@ -34,14 +37,20 @@ async def main():
         max_tokens=512
     )
 
-    source_type = "gdrive" if args.gdrive else "local"
+    if args.s3:
+        source_type = "s3"
+    elif args.gdrive:
+        source_type = "gdrive"
+    else:
+        source_type = "local"
 
     pipeline = DocumentIngestionPipeline(
         config=config,
         documents_folder=args.documents,
         clean_before_ingest=not args.no_clean,
         source_type=source_type,
-        gdrive_folder_id=args.folder_id
+        gdrive_folder_id=args.folder_id,
+        s3_prefix=args.s3_prefix
     )
 
     def progress(current: int, total: int):
